@@ -11,8 +11,9 @@ import (
 )
 
 type Card struct {
-	ID string
-	Points int
+	ID      int
+	Matches int
+	Points  int
 }
 
 func main() {
@@ -49,19 +50,28 @@ func main() {
 		points := int(math.Pow(2, float64(len(matches))-1))
 
 		cards = append(cards, Card{
-			ID: cardID,
-			Points: points,
+			ID:      util.ParseInt(cardID),
+			Matches: len(matches),
+			Points:  points,
 		})
 
 		fmt.Printf("card %s has %d points\n", cardID, int(points))
 	}
 
-	total := 0
-	for _, c := range cards {
-		total += c.Points	
+	scratchCards := make([]int, len(cards))
+	for i, c := range cards {
+		// iterate the copies number and the original
+		n := scratchCards[i] + 1
+
+		for k := 0; k < n; k++ {
+			for j := 1; j <= c.Matches; j++ {
+				scratchCards[i+j]++
+			}
+		}
 	}
 
-	fmt.Printf("the sum of winning points is %d\n", total)
+	// scratchCards only tracks copies, add the length of the originals
+	fmt.Printf("the total number of cards is %d\n", util.SumSlice(scratchCards)+len(cards))
 }
 
 func parseNumbers(s string) map[int]bool {
