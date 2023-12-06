@@ -21,35 +21,31 @@ func main() {
 
 	scanner := bufio.NewScanner(fd)
 
-	var times []int
-	var distances []int
+	var times []uint64
+	var distances []uint64
 
 	for scanner.Scan() {
 		t := scanner.Text()
 
-		f := strings.Fields(t)
+		field, values, _ := strings.Cut(t, ":")
 
-		if f[0] == "Time:" {
-			for _, s := range f[1:] {
-				times = append(times, util.ParseInt(s))
-			}
-		} else if f[0] == "Distance:" {
-			for _, s := range f[1:] {
-				distances = append(distances, util.ParseInt(s))
-			}
+		if field == "Time" {
+			times = append(times, util.ParseUInt64(strings.ReplaceAll(values, " ", "")) ) 
+		} else if field == "Distance" {
+			distances = append(distances, util.ParseUInt64(strings.ReplaceAll(values, " ", "")) ) 
 		}
 	}
 
 
-	var ways []int
+	var ways []uint64
 	for i := 0; i < len(times); i++ {
 		time := times[i]
 		distance := distances[i]
 
-		min := 1
+		min := uint64(1)
 		max := time - 1
 
-		var beaters []int
+		var beaters []uint64
 		for j := min; j <= max; j++ {
 			rem := time - j
 			if rem * j > distance {
@@ -57,10 +53,10 @@ func main() {
 			}
 		}
 
-		ways = append(ways, len(beaters))
+		ways = append(ways, uint64(len(beaters)))
 	}
 
-	final := 1
+	final := uint64(1)
 	for _, w := range ways {
 		final *= w
 	}
