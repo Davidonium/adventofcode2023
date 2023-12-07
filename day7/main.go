@@ -20,11 +20,21 @@ const (
 	FiveOfAKind
 )
 
+var handNames = map[int]string{
+	High: "high", 
+	Pair: "pair", 
+	TwoPair: "two pair", 
+	ThreeOfAKind: "three of a kind", 
+	FullHouse: "full house", 
+	FourOfAKind: "four of a kind", 
+	FiveOfAKind: "five of a kind", 
+}
+
 var scores = map[rune]int{
 	'A': 14,
 	'K': 13,
 	'Q': 12,
-	'J': 11,
+	'J': 1,
 	'T': 10,
 	'9': 9,
 	'8': 8,
@@ -103,6 +113,53 @@ func main() {
 			}
 		}
 
+		if n, ok := coinc['J']; ok {
+			switch handType {
+			case FourOfAKind:
+				switch n {
+				case 4:
+					fallthrough
+				case 1:
+					handType = FiveOfAKind
+				}
+			case FullHouse:
+				switch n {
+				case 3:
+					fallthrough
+				case 2:
+					handType = FiveOfAKind
+				}
+			case ThreeOfAKind:
+				switch n {
+				case 3:
+					fallthrough
+				case 1:
+					handType = FourOfAKind
+				}
+			case TwoPair:
+				switch n {
+				// two pair with JJ can turn into four of a kind
+				case 2:
+					handType = FourOfAKind
+				case 1:
+					handType = FullHouse
+				}
+			case Pair:
+				switch n {
+				// if the pair is the JJ, combine with any other card
+				case 2:
+					fallthrough
+				case 1:
+					handType = ThreeOfAKind
+				}
+			case High:
+				if n == 1 {
+					handType = Pair
+				}
+			}
+
+		}
+
 		h.Type = handType
 	}
 
@@ -111,7 +168,6 @@ func main() {
 		tb := hands[j]
 
 		if ta.Type == tb.Type {
-			fmt.Printf("comparing two hands with same type %d - %s vs %s\n", ta.Type, ta.Cards, tb.Cards)
 			rca := []rune(ta.Cards)
 			rcb := []rune(tb.Cards)
 
@@ -119,10 +175,7 @@ func main() {
 				scorea := scores[rca[i]]
 				scoreb := scores[rcb[i]]
 
-				fmt.Printf("comparing %s to %s\n", string(rca[i]), string(rcb[i]))
-
 				if scorea != scoreb {
-					fmt.Printf("scores are different: %d vs %d\n", scorea, scoreb)
 					return scorea < scoreb
 				}
 			}
@@ -136,7 +189,7 @@ func main() {
 	winnings := 0
 	for i, h := range hands {
 		winnings += (i + 1) * h.Bid
-		fmt.Printf("rank %d - hand %s - type %d - bid %d\n", i+1, h.Cards, h.Type, h.Bid)
+		fmt.Printf("rank %d - hand %s - %s - bid %d\n", i+1, h.Cards, handNames[h.Type], h.Bid)
 	}
 
 	fmt.Printf("total winnings: %d\n", winnings)
